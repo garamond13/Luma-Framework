@@ -2297,14 +2297,18 @@ namespace
       Display::InitNVApi();
 #endif
 
-#if ENABLE_SR
-      com_ptr<IDXGIDevice> native_dxgi_device;
+      com_ptr<IDXGIDevice1> native_dxgi_device;
       hr = native_device->QueryInterface(&native_dxgi_device);
+      assert(SUCCEEDED(hr));
+
+      // Lot of games are not setting this by them self,
+      // so it defaults to 3 which introduces significant input latency.
+      hr = native_dxgi_device->SetMaximumFrameLatency(1);
+      assert(SUCCEEDED(hr));
+
+#if ENABLE_SR
       com_ptr<IDXGIAdapter> native_adapter;
-      if (SUCCEEDED(hr))
-      {
-         hr = native_dxgi_device->GetAdapter(&native_adapter);
-      }
+      hr = native_dxgi_device->GetAdapter(&native_adapter);
       assert(SUCCEEDED(hr));
 
       bool selected_sr_implementation = false;
